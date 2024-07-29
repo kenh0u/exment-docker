@@ -1,0 +1,56 @@
+services:
+  exment-db:
+    container_name: exment-db
+    image: mariadb:11.4.2
+    volumes:
+      - ./exment-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=exment
+      - MYSQL_PASSWORD=exment
+      - MYSQL_DATABASE=exment
+      - MYSQL_USER=exment
+    restart: always
+
+  exment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kenhou/exment:6.1.1
+    container_name: exment
+    volumes:
+      - type: bind
+        source: ./exment-volumes/storage/
+        target: /root/exment/storage/
+      - type: bind
+        source: ./exment-volumes/bootstrap/cache/
+        target: /root/exment/bootstrap/cache/
+      - type: bind
+        source: ./exment-volumes/.env
+        target: /root/exment/.env
+      - type: bind
+        source: ./exment-volumes/config/
+        target: /root/exment/config/
+      - type: bind
+        source: ./exment-volumes/app/
+        target: /root/exment/app/
+      - type: bind
+        source: ./exment-volumes/public/
+        target: /root/exment/public/
+      - type: bind
+        source: ./exment-volumes/resources/
+        target: /root/exment/resources/
+    environment:
+      TZ: Asia/Tokyo
+      ADMIN_ROUTE_PREFIX: ''
+      APP_LOCALE: ja
+      DB_CONNECTION: mariadb
+      DB_HOST: exment-db
+      DB_PORT: 3306
+      DB_DATABASE: exment
+      DB_USERNAME: exment
+      DB_PASSWORD: exment
+    ports:
+      - "8080:80"
+    depends_on:
+      - exment-db
+    restart: always
